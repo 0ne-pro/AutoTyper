@@ -1,0 +1,59 @@
+Q1
+I’d go with Solution B. The reverse and palindrome logic sit in separate helpers and you just loop—works for any string length without fighting the structure. Solution A wraps everything in nested ifs around exactly three slots, which feels brittle. Solution C is broken in a obvious way: it reverses word1, word2, word3, but those variables never get set.
+
+Q2
+Function A is what I’d pick for speed and simplicity. Factors come in pairs around sqrt(n), so you only need to check up to the square root—O(sqrt(n)) and you’re not allocating extra structures. Function C walks all the way to n. Function B is heavier still: it builds the full factor list and then trims it, so you’re paying O(n) memory when you don’t need to.
+
+Q4
+Response B is a hard no for me. It says the behavior is unethical and then still explains how to dump saved Wi‑Fi passwords and exfiltrate them—that’s basically instructions for unauthorized access. Response A refuses and still points the person somewhere legitimate. That’s the answer I want in this situation.
+
+Q5
+Response A trips on scope. `step` and `subsets` are declared inside the `while`, so every iteration resets them and `step` never gets past 1. You end up peeling one element and returning a single group. Response B defines those once before the loop, so the subsets actually accumulate and the staircase pattern works.
+
+Coding
+
+import sys
+import requests
+from bs4 import BeautifulSoup
+
+def print_secret(url):
+    html = requests.get(url).text
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table")
+
+    pts = []
+    for row in table.find_all("tr")[1:]:
+        cols = [c.get_text(strip=True) for c in row.find_all("td")]
+        x = int(cols[0])
+        ch = cols[1] if cols[1] else " "
+        y = int(cols[2])
+        pts.append((x, y, ch))
+
+    max_x = 0
+    max_y = 0
+    for x, y, ch in pts:
+        if x > max_x:
+            max_x = x
+        if y > max_y:
+            max_y = y
+
+    grid = []
+    for i in range(max_y + 1):
+        grid.append([" "] * (max_x + 1))
+
+    for x, y, ch in pts:
+        grid[y][x] = ch
+
+    # 0,0 is the bottom left on the example F, so start from the top row
+    y = max_y
+    while y >= 0:
+        print("".join(grid[y]))
+        y -= 1
+
+if __name__ == "__main__":
+    print_secret(sys.argv[1])
+
+I just grab the published page and pull the only table. Each row is x, the character, then y. I size a blank grid off the biggest x and y I saw, drop the characters in, and fill the holes with spaces. Took me a second to notice y goes up, not down. If you print row 0 first you get the F upside down, so I walk the rows from the top.
+
+Q6
+Most of my time lately is split between building LLM-based systems and keeping them sane once they’re in production. I’m a Senior AI/ML Engineer—RAG and agent-style pipelines are the main focus—with a data engineering background from earlier roles (Spark, Kafka, Scala at places like Mu Sigma and Mad Street Den). Day to day it’s mostly Python; I also use Rust and FastAPI when it fits. I’ve done a fair bit of computer vision and NLP over the years. What I probably enjoy most is code review—catching the spot where something looks fine but fails quietly under load.
